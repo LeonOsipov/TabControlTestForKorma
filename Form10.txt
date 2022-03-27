@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Configuration;
+using System.Data.SqlClient;
+using Npgsql;
+
+namespace Korma_v0_1
+{
+    public partial class Form10InputEditSprHozyaistv : Form
+    {
+       // private NpgsqlConnection npgSqlConnection = null;
+        private NpgsqlDataAdapter adapter = null;
+        DataSet ds = null;
+        //private DataTable table = new DataTable();
+
+            
+
+        public Form10InputEditSprHozyaistv()
+        {
+            InitializeComponent();
+        }
+
+        private void Form10_Load(object sender, EventArgs e)
+        {
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "db_kormaDataSet.sprraionov". При необходимости она может быть перемещена или удалена.
+            this.sprraionovTableAdapter.Fill(this.db_kormaDataSet.sprraionov);
+                        
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            String connectionString = "Server=192.168.2.4; Port=5432; Database=db_korma; Uid=agro_user; Pwd=123456;";
+            NpgsqlConnection npgSqlConnection = new NpgsqlConnection(connectionString);
+            npgSqlConnection.Open();
+
+            adapter = new NpgsqlDataAdapter("SELECT kodhozyaistva AS \"Код хозяйства\", namehozyaistva AS \"Название хозяйства\" FROM sprhozyaistv WHERE nameraiona =" + "N" + "'" + comboBox1.Text + "'", npgSqlConnection);
+            // Создаем объект Dataset
+            ds = new DataSet();
+            // Заполняем Dataset
+            adapter.Fill(ds);
+            // Отображаем данные
+            dataGridView1.DataSource = ds.Tables[0];
+            npgSqlConnection.Close();
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //adapter.
+            Form13InputSprHozyaistv FormInputHozyaistv = new Form13InputSprHozyaistv();
+            FormInputHozyaistv.Show();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+
+                this.Close();//Событие кнопке ВЫХОД
+        }
+    }
+}
+
+-----------------------------
+adapter = new NpgsqlDataAdapter("SELECT kodhozyaistva AS \"Код хозяйства\", namehozyaistva AS \"Название хозяйства\" FROM sprhozyaistv WHERE nameraiona =" + "N" + "'" + comboBox1.Text + "'", npgSqlConnection);
+
+-----------------------------
+using (SqlConnection conn = new SqlConnection(@"Data Source=SHARKAWY;Initial Catalog=Booking;Persist Security Info=True;User ID=sa;Password=123456"))
+{
+    try
+    {
+        string query = "select FleetName, FleetID from fleets";
+        SqlDataAdapter da = new SqlDataAdapter(query, conn);
+        conn.Open();
+        DataSet ds = new DataSet();
+        da.Fill(ds, "Fleet");
+        cmbTripName.DisplayMember =  "FleetName";
+        cmbTripName.ValueMember = "FleetID";
+        cmbTripName.DataSource = ds.Tables["Fleet"];
+    }
+    catch (Exception ex)
+    {
+        // write exception info to log or anything else
+        MessageBox.Show("Error occured!");
+    }               
+}
+----------------------------------------------------
+Колекция в DataSet из нескольких таблиц (пример на VB):
+
+' Assumes that customerConnection is a valid SqlConnection object.
+' Assumes that orderConnection is a valid OleDbConnection object.
+Dim custAdapter As SqlDataAdapter = New SqlDataAdapter( _
+  "SELECT * FROM dbo.Customers", customerConnection)
+
+Dim ordAdapter As OleDbDataAdapter = New OleDbDataAdapter( _
+  "SELECT * FROM Orders", orderConnection)
+
+Dim customerOrders As DataSet = New DataSet()
+custAdapter.Fill(customerOrders, "Customers")
+ordAdapter.Fill(customerOrders, "Orders")
+
+Dim relation As DataRelation = _
+  customerOrders.Relations.Add("CustOrders", _
+  customerOrders.Tables("Customers").Columns("CustomerID"), _ 
+  customerOrders.Tables("Orders").Columns("CustomerID"))
+
+Dim pRow, cRow As DataRow
+For Each pRow In customerOrders.Tables("Customers").Rows
+  Console.WriteLine(pRow("CustomerID").ToString())
+
+  For Each cRow In pRow.GetChildRows(relation)
+    Console.WriteLine(vbTab & cRow("OrderID").ToString())
+  Next
+Next 
+----------------------------------------------------
